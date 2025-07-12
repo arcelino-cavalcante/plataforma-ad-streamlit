@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime, date, time
 from streamlit_option_menu import option_menu
 import pandas as pd
+from streamlit_calendar import calendar as calendar_component
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
@@ -471,6 +472,23 @@ if menu == "Visão Geral":
         for t in st.session_state.transactions
     )
     col4.metric("Saldo", f"R$ {saldo:,.2f}")
+    st.subheader("Calendário")
+    calendar_events = [
+        {
+            "title": e["Título"],
+            "start": e["Data"].isoformat(),
+            "color": EVENT_STATUS_COLORS.get(e["Status"], "gray"),
+        }
+        for e in st.session_state.events
+    ]
+    calendar_component(
+        events=calendar_events,
+        options={
+            "initialView": "dayGridMonth",
+            "locale": "pt-br",
+            "height": 500,
+        },
+    )
     st.subheader("Próximos eventos")
     if st.session_state.events:
         upcoming = sorted(st.session_state.events, key=lambda x: x["Data"])[:5]

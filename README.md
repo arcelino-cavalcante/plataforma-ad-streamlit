@@ -6,7 +6,7 @@ Este repositório contém um painel em [Streamlit](https://streamlit.io/) para g
 
 1. Instale as dependências necessárias:
    ```bash
-   pip install streamlit streamlit-option-menu
+   pip install streamlit streamlit-option-menu streamlit-calendar
    ```
 2. Execute a aplicação com:
    ```bash
