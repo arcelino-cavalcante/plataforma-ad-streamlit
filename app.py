@@ -58,6 +58,17 @@ with st.sidebar:
 
 # Funções auxiliares
 
+CASE_STATUS_COLORS = {"Ativo": "green", "Encerrado": "red", "Suspenso": "orange"}
+EVENT_STATUS_COLORS = {"Agendado": "blue", "Concluído": "green", "Cancelado": "red"}
+TASK_PRIORITY_COLORS = {"Baixa": "green", "Média": "orange", "Alta": "red"}
+PAYMENT_STATUS_COLORS = {"Pendente": "orange", "Pago": "green"}
+
+
+def status_badge(status: str, mapping: dict) -> str:
+    """Return HTML string for a colored status badge."""
+    color = mapping.get(status, "gray")
+    return f"<span style='color:{color}; font-weight:bold'>{status}</span>"
+
 
 def add_client(name, email, phone, notes):
     st.session_state.clients.append(
@@ -450,13 +461,19 @@ if menu == "Visão Geral":
     col2.metric("Casos", len(st.session_state.cases))
     col3.metric("Tarefas", len(st.session_state.tasks))
     saldo = sum(
-        t["Valor"] if t["Tipo"] == "Entrada" else -t["Valor"]
+        t["Valor"] if t["Tipo"] == "Receita" else -t["Valor"]
         for t in st.session_state.transactions
     )
     col4.metric("Saldo", f"R$ {saldo:,.2f}")
     st.subheader("Próximos eventos")
     if st.session_state.events:
-        st.table(st.session_state.events)
+        upcoming = sorted(st.session_state.events, key=lambda x: x["Data"])[:5]
+        for e in upcoming:
+            status_html = status_badge(e["Status"], EVENT_STATUS_COLORS)
+            st.markdown(
+                f"**{e['Título']}** - {e['Data'].strftime('%d/%m/%Y %H:%M')} | {status_html}",
+                unsafe_allow_html=True,
+            )
     else:
         st.info("Nenhum evento cadastrado")
 
@@ -523,8 +540,14 @@ elif menu == "Casos":
         for c in filtered_cases:
             orig = st.session_state.cases.index(c)
             st.markdown("---")
-            st.write(f"**Processo:** {c['Processo']} - Cliente: {c['Cliente']}")
-            st.write(f"Status: {c['Status']} | Advogado: {c['Advogado']}")
+            status_html = status_badge(c["Status"], CASE_STATUS_COLORS)
+            st.markdown(
+                f"**Processo:** {c['Processo']} - Cliente: {c['Cliente']}"
+            )
+            st.markdown(
+                f"Status: {status_html} | Advogado: {c['Advogado']}",
+                unsafe_allow_html=True,
+            )
             st.write(f"Data de Abertura: {c['Data de Abertura']}")
             if c.get("Partes"):
                 st.write(c["Partes"])
@@ -602,8 +625,11 @@ elif menu == "Agenda":
         for e in filtered_events:
             orig = st.session_state.events.index(e)
             st.markdown("---")
+            status_html = status_badge(e["Status"], EVENT_STATUS_COLORS)
             st.write(f"**{e['Título']}** - {e['Data'].strftime('%d/%m/%Y %H:%M')}")
-            st.write(f"Tipo: {e['Tipo']} | Status: {e['Status']}")
+            st.markdown(
+                f"Tipo: {e['Tipo']} | Status: {status_html}", unsafe_allow_html=True
+            )
             st.write(f"Local: {e['Local']}")
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_event_{orig}"):
@@ -645,7 +671,11 @@ elif menu == "Tarefas":
         for t in filtered_tasks:
             orig = st.session_state.tasks.index(t)
             st.markdown("---")
-            st.write(f"**{t['Descrição']}** - Prioridade: {t['Prioridade']}")
+            priority_html = status_badge(t["Prioridade"], TASK_PRIORITY_COLORS)
+            st.markdown(
+                f"**{t['Descrição']}** - Prioridade: {priority_html}",
+                unsafe_allow_html=True,
+            )
             st.write(
                 f"Prazo: {t['Prazo']} | Cliente: {t['Cliente']} | Caso: {t['Caso']}"
             )
@@ -685,11 +715,21 @@ elif menu == "Financeiro":
 
     st.subheader("Movimentos")
     if st.session_state.transactions:
-        st.table(st.session_state.transactions)
+        for t in st.session_state.transactions:
+            st.markdown("---")
+            status_html = status_badge(t["Status"], PAYMENT_STATUS_COLORS)
+            st.markdown(
+                f"**{t['Tipo']}** - R$ {t['Valor']:.2f} | {status_html}",
+                unsafe_allow_html=True,
+            )
+            st.write(
+                f"{t['Categoria']} | {t['Data']} | Cliente: {t['Cliente']} | Caso: {t['Caso']}"
+            )
+            st.write(t["Descrição"])
     else:
         st.info("Nenhum movimento registrado")
     saldo = sum(
-        t["Valor"] if t["Tipo"] == "Entrada" else -t["Valor"]
+        t["Valor"] if t["Tipo"] == "Receita" else -t["Valor"]
         for t in st.session_state.transactions
     )
     st.write(f"**Saldo atual:** R$ {saldo:,.2f}")
