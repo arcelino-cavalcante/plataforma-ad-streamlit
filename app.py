@@ -4,6 +4,7 @@ from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
+
 # Compatibilidade para diferentes versões do Streamlit
 def rerun():
     """Rerun a aplicação usando a API disponível."""
@@ -12,35 +13,36 @@ def rerun():
     else:  # versões antigas
         st.experimental_rerun()
 
+
 # Inicializa estados
-if 'clients' not in st.session_state:
+if "clients" not in st.session_state:
     st.session_state.clients = []
-if 'cases' not in st.session_state:
+if "cases" not in st.session_state:
     st.session_state.cases = []
-if 'tasks' not in st.session_state:
+if "tasks" not in st.session_state:
     st.session_state.tasks = []
-if 'events' not in st.session_state:
+if "events" not in st.session_state:
     st.session_state.events = []
-if 'transactions' not in st.session_state:
+if "transactions" not in st.session_state:
     st.session_state.transactions = []
-if 'documents' not in st.session_state:
+if "documents" not in st.session_state:
     st.session_state.documents = []
 
-if 'show_add_client' not in st.session_state:
+if "show_add_client" not in st.session_state:
     st.session_state.show_add_client = False
-if 'show_add_case' not in st.session_state:
+if "show_add_case" not in st.session_state:
     st.session_state.show_add_case = False
-if 'show_add_task' not in st.session_state:
+if "show_add_task" not in st.session_state:
     st.session_state.show_add_task = False
-if 'show_add_event' not in st.session_state:
+if "show_add_event" not in st.session_state:
     st.session_state.show_add_event = False
-if 'show_add_transaction' not in st.session_state:
+if "show_add_transaction" not in st.session_state:
     st.session_state.show_add_transaction = False
-if 'show_add_document' not in st.session_state:
+if "show_add_document" not in st.session_state:
     st.session_state.show_add_document = False
-if 'show_add_income' not in st.session_state:
+if "show_add_income" not in st.session_state:
     st.session_state.show_add_income = False
-if 'show_add_expense' not in st.session_state:
+if "show_add_expense" not in st.session_state:
     st.session_state.show_add_expense = False
 
 with st.sidebar:
@@ -71,64 +73,87 @@ with st.sidebar:
 
 # Funções auxiliares
 
+
 def add_client(name, email, phone, notes):
-    st.session_state.clients.append({
-        "Nome": name,
-        "Email": email,
-        "Telefone": phone,
-        "Anotações": notes,
-    })
+    st.session_state.clients.append(
+        {
+            "Nome": name,
+            "Email": email,
+            "Telefone": phone,
+            "Anotações": notes,
+        }
+    )
+
 
 def add_case(client, process_number, parties, lawyer, start_date, status):
-    st.session_state.cases.append({
-        "Cliente": client,
-        "Processo": process_number,
-        "Partes": parties,
-        "Advogado": lawyer,
-        "Data de Abertura": start_date,
-        "Status": status,
-    })
+    st.session_state.cases.append(
+        {
+            "Cliente": client,
+            "Processo": process_number,
+            "Partes": parties,
+            "Advogado": lawyer,
+            "Data de Abertura": start_date,
+            "Status": status,
+        }
+    )
+
 
 def add_task(description, priority, due_date, client, related_case):
-    st.session_state.tasks.append({
-        "Descrição": description,
-        "Prioridade": priority,
-        "Prazo": due_date,
-        "Cliente": client,
-        "Caso": related_case,
-    })
+    st.session_state.tasks.append(
+        {
+            "Descrição": description,
+            "Prioridade": priority,
+            "Prazo": due_date,
+            "Cliente": client,
+            "Caso": related_case,
+        }
+    )
 
-def add_event(title, event_type, event_datetime, location, client, case, status, description):
-    st.session_state.events.append({
-        "Título": title,
-        "Tipo": event_type,
-        "Data": event_datetime,
-        "Local": location,
-        "Cliente": client,
-        "Caso": case,
-        "Status": status,
-        "Descrição": description,
-    })
 
-def add_transaction(kind, category, amount, description, trans_date, payment_status, client, case):
-    st.session_state.transactions.append({
-        "Tipo": kind,
-        "Categoria": category,
-        "Valor": amount,
-        "Descrição": description,
-        "Data": trans_date,
-        "Status": payment_status,
-        "Cliente": client,
-        "Caso": case,
-    })
+def add_event(
+    title, event_type, event_datetime, location, client, case, status, description
+):
+    st.session_state.events.append(
+        {
+            "Título": title,
+            "Tipo": event_type,
+            "Data": event_datetime,
+            "Local": location,
+            "Cliente": client,
+            "Caso": case,
+            "Status": status,
+            "Descrição": description,
+        }
+    )
+
+
+def add_transaction(
+    kind, category, amount, description, trans_date, payment_status, client, case
+):
+    st.session_state.transactions.append(
+        {
+            "Tipo": kind,
+            "Categoria": category,
+            "Valor": amount,
+            "Descrição": description,
+            "Data": trans_date,
+            "Status": payment_status,
+            "Cliente": client,
+            "Caso": case,
+        }
+    )
+
 
 def add_document(client, case, title, file):
-    st.session_state.documents.append({
-        "Cliente": client,
-        "Caso": case,
-        "Título": title,
-        "Arquivo": file.name if file else "",
-    })
+    st.session_state.documents.append(
+        {
+            "Cliente": client,
+            "Caso": case,
+            "Título": title,
+            "Arquivo": file.name if file else "",
+        }
+    )
+
 
 # Páginas
 if menu == "Visão Geral":
@@ -137,7 +162,10 @@ if menu == "Visão Geral":
     col1.metric("Clientes", len(st.session_state.clients))
     col2.metric("Casos", len(st.session_state.cases))
     col3.metric("Tarefas", len(st.session_state.tasks))
-    saldo = sum(t['Valor'] if t['Tipo'] == 'Entrada' else -t['Valor'] for t in st.session_state.transactions)
+    saldo = sum(
+        t["Valor"] if t["Tipo"] == "Entrada" else -t["Valor"]
+        for t in st.session_state.transactions
+    )
     col4.metric("Saldo", f"R$ {saldo:,.2f}")
     st.subheader("Próximos eventos")
     if st.session_state.events:
@@ -163,7 +191,7 @@ elif menu == "Clientes":
     st.subheader("Lista de Clientes")
     search_client = st.text_input("Buscar", key="search_client")
     edit_idx = st.session_state.get("edit_client_idx")
-    if edit_idx is not None:
+    if edit_idx is not None and 0 <= edit_idx < len(st.session_state.clients):
         c = st.session_state.clients[edit_idx]
         with st.expander("Editar Cliente", expanded=True):
             with st.form("edit_client"):
@@ -182,16 +210,23 @@ elif menu == "Clientes":
                     st.session_state.edit_client_idx = None
                     st.success("Cliente atualizado")
                     rerun()
+    elif edit_idx is not None:
+        st.session_state.edit_client_idx = None
+        rerun()
 
-    filtered_clients = [c for c in st.session_state.clients if search_client.lower() in c["Nome"].lower()]
+    filtered_clients = [
+        c
+        for c in st.session_state.clients
+        if search_client.lower() in c["Nome"].lower()
+    ]
     if filtered_clients:
         for c in filtered_clients:
             orig = st.session_state.clients.index(c)
             st.markdown("---")
             st.write(f"**{c['Nome']}**")
             st.write(f"Email: {c['Email']}  Telefone: {c['Telefone']}")
-            if c.get('Anotações'):
-                st.write(c['Anotações'])
+            if c.get("Anotações"):
+                st.write(c["Anotações"])
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_client_{orig}"):
                 st.session_state.edit_client_idx = orig
@@ -209,10 +244,13 @@ elif menu == "Casos":
     if st.session_state.show_add_case:
         with st.expander("Adicionar Caso", expanded=True):
             with st.form("add_case"):
-                client = st.selectbox(
-                    "Cliente *",
-                    [c['Nome'] for c in st.session_state.clients]
-                ) if st.session_state.clients else st.text_input("Cliente *")
+                client = (
+                    st.selectbox(
+                        "Cliente *", [c["Nome"] for c in st.session_state.clients]
+                    )
+                    if st.session_state.clients
+                    else st.text_input("Cliente *")
+                )
                 process_number = st.text_input("Nº do Processo *")
                 parties = st.text_area("Partes Envolvidas")
                 lawyer = st.text_input("Advogado Responsável")
@@ -220,14 +258,16 @@ elif menu == "Casos":
                 status = st.selectbox("Status", ["Ativo", "Encerrado", "Suspenso"])
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
-                    add_case(client, process_number, parties, lawyer, start_date, status)
+                    add_case(
+                        client, process_number, parties, lawyer, start_date, status
+                    )
                     st.success("Caso adicionado")
     st.subheader("Lista de Casos")
     search_case = st.text_input("Buscar", key="search_case")
     statuses = ["Todos"] + sorted(list({c["Status"] for c in st.session_state.cases}))
     status_filter = st.selectbox("Filtrar por Status", statuses, key="status_case")
     edit_idx = st.session_state.get("edit_case_idx")
-    if edit_idx is not None:
+    if edit_idx is not None and 0 <= edit_idx < len(st.session_state.cases):
         c = st.session_state.cases[edit_idx]
         with st.expander("Editar Caso", expanded=True):
             with st.form("edit_case"):
@@ -235,8 +275,14 @@ elif menu == "Casos":
                 process_number = st.text_input("Nº do Processo *", value=c["Processo"])
                 parties = st.text_area("Partes Envolvidas", value=c["Partes"])
                 lawyer = st.text_input("Advogado Responsável", value=c["Advogado"])
-                start_date = st.date_input("Data de Abertura", value=c["Data de Abertura"])
-                status = st.selectbox("Status", ["Ativo", "Encerrado", "Suspenso"], index=["Ativo", "Encerrado", "Suspenso"].index(c["Status"]))
+                start_date = st.date_input(
+                    "Data de Abertura", value=c["Data de Abertura"]
+                )
+                status = st.selectbox(
+                    "Status",
+                    ["Ativo", "Encerrado", "Suspenso"],
+                    index=["Ativo", "Encerrado", "Suspenso"].index(c["Status"]),
+                )
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
                     st.session_state.cases[edit_idx] = {
@@ -250,8 +296,16 @@ elif menu == "Casos":
                     st.session_state.edit_case_idx = None
                     st.success("Caso atualizado")
                     rerun()
+    elif edit_idx is not None:
+        st.session_state.edit_case_idx = None
+        rerun()
 
-    filtered_cases = [c for c in st.session_state.cases if search_case.lower() in c["Processo"].lower() or search_case.lower() in c["Cliente"].lower()]
+    filtered_cases = [
+        c
+        for c in st.session_state.cases
+        if search_case.lower() in c["Processo"].lower()
+        or search_case.lower() in c["Cliente"].lower()
+    ]
     if status_filter != "Todos":
         filtered_cases = [c for c in filtered_cases if c["Status"] == status_filter]
     if filtered_cases:
@@ -261,8 +315,8 @@ elif menu == "Casos":
             st.write(f"**Processo:** {c['Processo']} - Cliente: {c['Cliente']}")
             st.write(f"Status: {c['Status']} | Advogado: {c['Advogado']}")
             st.write(f"Data de Abertura: {c['Data de Abertura']}")
-            if c.get('Partes'):
-                st.write(c['Partes'])
+            if c.get("Partes"):
+                st.write(c["Partes"])
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_case_{orig}"):
                 st.session_state.edit_case_idx = orig
@@ -280,13 +334,16 @@ elif menu == "Documentos":
     if st.session_state.show_add_document:
         with st.expander("Anexar Documento", expanded=True):
             with st.form("add_document"):
-                client = st.selectbox(
-                    "Cliente *",
-                    [c['Nome'] for c in st.session_state.clients]
-                ) if st.session_state.clients else st.text_input("Cliente *")
+                client = (
+                    st.selectbox(
+                        "Cliente *", [c["Nome"] for c in st.session_state.clients]
+                    )
+                    if st.session_state.clients
+                    else st.text_input("Cliente *")
+                )
                 case = st.selectbox(
                     "Vincular ao Caso (opcional)",
-                    ["Nenhum"] + [c['Processo'] for c in st.session_state.cases]
+                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
                 )
                 title = st.text_input("Título / Descrição *")
                 file = st.file_uploader("Arquivo *")
@@ -298,7 +355,7 @@ elif menu == "Documentos":
     st.subheader("Documentos")
     search_doc = st.text_input("Buscar", key="search_document")
     edit_idx = st.session_state.get("edit_document_idx")
-    if edit_idx is not None:
+    if edit_idx is not None and 0 <= edit_idx < len(st.session_state.documents):
         d = st.session_state.documents[edit_idx]
         with st.expander("Editar Documento", expanded=True):
             with st.form("edit_document"):
@@ -316,8 +373,15 @@ elif menu == "Documentos":
                     st.session_state.edit_document_idx = None
                     st.success("Documento atualizado")
                     rerun()
+    elif edit_idx is not None:
+        st.session_state.edit_document_idx = None
+        rerun()
 
-    filtered_docs = [d for d in st.session_state.documents if search_doc.lower() in d["Título"].lower()]
+    filtered_docs = [
+        d
+        for d in st.session_state.documents
+        if search_doc.lower() in d["Título"].lower()
+    ]
     if filtered_docs:
         for d in filtered_docs:
             orig = st.session_state.documents.index(d)
@@ -342,17 +406,19 @@ elif menu == "Agenda":
         with st.expander("Adicionar Evento", expanded=True):
             with st.form("add_event"):
                 title = st.text_input("Título *")
-                event_type = st.selectbox("Tipo de Evento *", ["Audiência", "Prazo", "Reunião"])
+                event_type = st.selectbox(
+                    "Tipo de Evento *", ["Audiência", "Prazo", "Reunião"]
+                )
                 event_day = st.date_input("Data *", value=date.today())
                 event_time = st.time_input("Hora *", value=datetime.now().time())
                 location = st.text_input("Local / Link")
                 client = st.selectbox(
                     "Vincular ao Cliente",
-                    ["Nenhum"] + [c['Nome'] for c in st.session_state.clients]
+                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
                 )
                 case = st.selectbox(
                     "Vincular ao Caso",
-                    ["Nenhum"] + [c['Processo'] for c in st.session_state.cases]
+                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
                 )
                 status = st.selectbox("Status", ["Agendado", "Concluído", "Cancelado"])
                 description = st.text_area("Descrição")
@@ -361,25 +427,44 @@ elif menu == "Agenda":
                     client_val = None if client == "Nenhum" else client
                     case_val = None if case == "Nenhum" else case
                     dt = datetime.combine(event_day, event_time)
-                    add_event(title, event_type, dt, location, client_val, case_val, status, description)
+                    add_event(
+                        title,
+                        event_type,
+                        dt,
+                        location,
+                        client_val,
+                        case_val,
+                        status,
+                        description,
+                    )
                     st.success("Evento adicionado")
     st.subheader("Eventos")
     search_event = st.text_input("Buscar", key="search_event")
-    statuses_evt = ["Todos"] + sorted(list({e["Status"] for e in st.session_state.events}))
+    statuses_evt = ["Todos"] + sorted(
+        list({e["Status"] for e in st.session_state.events})
+    )
     status_filter_evt = st.selectbox("Status", statuses_evt, key="status_event")
     edit_idx = st.session_state.get("edit_event_idx")
-    if edit_idx is not None:
+    if edit_idx is not None and 0 <= edit_idx < len(st.session_state.events):
         ev = st.session_state.events[edit_idx]
         with st.expander("Editar Evento", expanded=True):
             with st.form("edit_event"):
                 title = st.text_input("Título *", value=ev["Título"])
-                event_type = st.selectbox("Tipo de Evento *", ["Audiência", "Prazo", "Reunião"], index=["Audiência", "Prazo", "Reunião"].index(ev["Tipo"]))
+                event_type = st.selectbox(
+                    "Tipo de Evento *",
+                    ["Audiência", "Prazo", "Reunião"],
+                    index=["Audiência", "Prazo", "Reunião"].index(ev["Tipo"]),
+                )
                 event_day = st.date_input("Data *", value=ev["Data"].date())
                 event_time = st.time_input("Hora *", value=ev["Data"].time())
                 location = st.text_input("Local / Link", value=ev["Local"])
                 client = st.text_input("Cliente", value=ev["Cliente"] or "")
                 case = st.text_input("Caso", value=ev["Caso"] or "")
-                status = st.selectbox("Status", ["Agendado", "Concluído", "Cancelado"], index=["Agendado", "Concluído", "Cancelado"].index(ev["Status"]))
+                status = st.selectbox(
+                    "Status",
+                    ["Agendado", "Concluído", "Cancelado"],
+                    index=["Agendado", "Concluído", "Cancelado"].index(ev["Status"]),
+                )
                 description = st.text_area("Descrição", value=ev["Descrição"])
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
@@ -397,10 +482,19 @@ elif menu == "Agenda":
                     st.session_state.edit_event_idx = None
                     st.success("Evento atualizado")
                     rerun()
+    elif edit_idx is not None:
+        st.session_state.edit_event_idx = None
+        rerun()
 
-    filtered_events = [e for e in st.session_state.events if search_event.lower() in e["Título"].lower()]
+    filtered_events = [
+        e
+        for e in st.session_state.events
+        if search_event.lower() in e["Título"].lower()
+    ]
     if status_filter_evt != "Todos":
-        filtered_events = [e for e in filtered_events if e["Status"] == status_filter_evt]
+        filtered_events = [
+            e for e in filtered_events if e["Status"] == status_filter_evt
+        ]
     if filtered_events:
         for e in filtered_events:
             orig = st.session_state.events.index(e)
@@ -430,11 +524,11 @@ elif menu == "Tarefas":
                 due_date = st.date_input("Data do Prazo", value=date.today())
                 client = st.selectbox(
                     "Vincular ao Cliente",
-                    ["Nenhum"] + [c['Nome'] for c in st.session_state.clients]
+                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
                 )
                 related_case = st.selectbox(
                     "Vincular ao Caso",
-                    ["Nenhum"] + [c['Processo'] for c in st.session_state.cases]
+                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
                 )
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
@@ -445,14 +539,22 @@ elif menu == "Tarefas":
     st.subheader("Lista de Tarefas")
     search_task = st.text_input("Buscar", key="search_task")
     apply_filter = st.checkbox("Filtrar por prazo", key="apply_due")
-    due_filter = st.date_input("Até", value=date.today(), key="filter_due") if apply_filter else None
+    due_filter = (
+        st.date_input("Até", value=date.today(), key="filter_due")
+        if apply_filter
+        else None
+    )
     edit_idx = st.session_state.get("edit_task_idx")
-    if edit_idx is not None:
+    if edit_idx is not None and 0 <= edit_idx < len(st.session_state.tasks):
         t = st.session_state.tasks[edit_idx]
         with st.expander("Editar Tarefa", expanded=True):
             with st.form("edit_task"):
                 description = st.text_input("Descrição *", value=t["Descrição"])
-                priority = st.selectbox("Prioridade", ["Baixa", "Média", "Alta"], index=["Baixa", "Média", "Alta"].index(t["Prioridade"]))
+                priority = st.selectbox(
+                    "Prioridade",
+                    ["Baixa", "Média", "Alta"],
+                    index=["Baixa", "Média", "Alta"].index(t["Prioridade"]),
+                )
                 due_date = st.date_input("Data do Prazo", value=t["Prazo"])
                 client = st.text_input("Cliente", value=t["Cliente"] or "")
                 related_case = st.text_input("Caso", value=t["Caso"] or "")
@@ -468,8 +570,15 @@ elif menu == "Tarefas":
                     st.session_state.edit_task_idx = None
                     st.success("Tarefa atualizada")
                     rerun()
+    elif edit_idx is not None:
+        st.session_state.edit_task_idx = None
+        rerun()
 
-    filtered_tasks = [t for t in st.session_state.tasks if search_task.lower() in t["Descrição"].lower()]
+    filtered_tasks = [
+        t
+        for t in st.session_state.tasks
+        if search_task.lower() in t["Descrição"].lower()
+    ]
     if due_filter:
         filtered_tasks = [t for t in filtered_tasks if t["Prazo"] <= due_filter]
     if filtered_tasks:
@@ -477,7 +586,9 @@ elif menu == "Tarefas":
             orig = st.session_state.tasks.index(t)
             st.markdown("---")
             st.write(f"**{t['Descrição']}** - Prioridade: {t['Prioridade']}")
-            st.write(f"Prazo: {t['Prazo']} | Cliente: {t['Cliente']} | Caso: {t['Caso']}")
+            st.write(
+                f"Prazo: {t['Prazo']} | Cliente: {t['Cliente']} | Caso: {t['Caso']}"
+            )
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_task_{orig}"):
                 st.session_state.edit_task_idx = orig
@@ -491,9 +602,9 @@ elif menu == "Tarefas":
 elif menu == "Casos por Cliente":
     st.title("Casos por Cliente")
     if st.session_state.clients:
-        client_names = [c['Nome'] for c in st.session_state.clients]
+        client_names = [c["Nome"] for c in st.session_state.clients]
         client_selected = st.selectbox("Cliente", client_names)
-        cases = [c for c in st.session_state.cases if c['Cliente'] == client_selected]
+        cases = [c for c in st.session_state.cases if c["Cliente"] == client_selected]
         st.subheader(f"Casos de {client_selected}")
         if cases:
             st.table(cases)
@@ -522,11 +633,11 @@ elif menu == "Financeiro":
                 payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
                 client = st.selectbox(
                     "Vincular ao Cliente",
-                    ["Nenhum"] + [c['Nome'] for c in st.session_state.clients]
+                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
                 )
                 case = st.selectbox(
                     "Vincular ao Caso",
-                    ["Nenhum"] + [c['Processo'] for c in st.session_state.cases]
+                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
                 )
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
@@ -554,11 +665,11 @@ elif menu == "Financeiro":
                 payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
                 client = st.selectbox(
                     "Vincular ao Cliente",
-                    ["Nenhum"] + [c['Nome'] for c in st.session_state.clients]
+                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
                 )
                 case = st.selectbox(
                     "Vincular ao Caso",
-                    ["Nenhum"] + [c['Processo'] for c in st.session_state.cases]
+                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
                 )
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
@@ -581,5 +692,8 @@ elif menu == "Financeiro":
         st.table(st.session_state.transactions)
     else:
         st.info("Nenhum movimento registrado")
-    saldo = sum(t['Valor'] if t['Tipo'] == 'Entrada' else -t['Valor'] for t in st.session_state.transactions)
+    saldo = sum(
+        t["Valor"] if t["Tipo"] == "Entrada" else -t["Valor"]
+        for t in st.session_state.transactions
+    )
     st.write(f"**Saldo atual:** R$ {saldo:,.2f}")
