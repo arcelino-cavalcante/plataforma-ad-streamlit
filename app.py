@@ -65,6 +65,11 @@ TASK_PRIORITY_COLORS = {"Baixa": "green", "Média": "orange", "Alta": "red"}
 PAYMENT_STATUS_COLORS = {"Pendente": "orange", "Pago": "green"}
 
 
+def item_separator() -> None:
+    """Render a horizontal rule with extra spacing."""
+    st.markdown("<hr style='margin:25px 0'>", unsafe_allow_html=True)
+
+
 def status_badge(status: str, mapping: dict) -> str:
     """Return HTML string for a colored status badge."""
     color = mapping.get(status, "gray")
@@ -492,7 +497,7 @@ elif menu == "Clientes":
     if clients_filtered:
         for c in clients_filtered:
             idx = st.session_state.clients.index(c)
-            st.markdown("---")
+            item_separator()
             st.write(f"**{c['Nome']}**")
             st.write(f"Email: {c['Email']} | Telefone: {c['Telefone']}")
             if c.get("Anotações"):
@@ -540,7 +545,7 @@ elif menu == "Casos":
     if filtered_cases:
         for c in filtered_cases:
             orig = st.session_state.cases.index(c)
-            st.markdown("---")
+            item_separator()
             status_html = status_badge(c["Status"], CASE_STATUS_COLORS)
             st.markdown(
                 f"**Processo:** {c['Processo']} - Cliente: {c['Cliente']}"
@@ -583,7 +588,7 @@ elif menu == "Documentos":
     if filtered_docs:
         for d in filtered_docs:
             orig = st.session_state.documents.index(d)
-            st.markdown("---")
+            item_separator()
             st.write(f"**{d['Título']}**")
             st.write(f"Cliente: {d['Cliente']} | Caso: {d['Caso']}")
             col1, col2 = st.columns(2)
@@ -625,7 +630,7 @@ elif menu == "Agenda":
     if filtered_events:
         for e in filtered_events:
             orig = st.session_state.events.index(e)
-            st.markdown("---")
+            item_separator()
             status_html = status_badge(e["Status"], EVENT_STATUS_COLORS)
             st.write(f"**{e['Título']}** - {e['Data'].strftime('%d/%m/%Y %H:%M')}")
             st.markdown(
@@ -671,7 +676,7 @@ elif menu == "Tarefas":
     if filtered_tasks:
         for t in filtered_tasks:
             orig = st.session_state.tasks.index(t)
-            st.markdown("---")
+            item_separator()
             priority_html = status_badge(t["Prioridade"], TASK_PRIORITY_COLORS)
             st.markdown(
                 f"**{t['Descrição']}** - Prioridade: {priority_html}",
@@ -699,7 +704,7 @@ elif menu == "Casos por Cliente":
         st.subheader(f"Casos de {client_selected}")
         if cases:
             for c in cases:
-                st.markdown("---")
+                item_separator()
                 status_html = status_badge(c["Status"], CASE_STATUS_COLORS)
                 col1, col2 = st.columns(2)
                 col1.write(f"Processo: {c['Processo']}")
@@ -725,7 +730,7 @@ elif menu == "Financeiro":
     st.subheader("Movimentos")
     if st.session_state.transactions:
         for t in st.session_state.transactions:
-            st.markdown("---")
+            item_separator()
             status_html = status_badge(t["Status"], PAYMENT_STATUS_COLORS)
             st.markdown(
                 f"**{t['Tipo']}** - R$ {t['Valor']:.2f} | {status_html}",
