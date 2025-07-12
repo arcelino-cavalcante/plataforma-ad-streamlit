@@ -26,4 +26,4 @@ O painel possui as seguintes seções:
 Cada seção permite cadastrar e visualizar informações relacionadas ao dia a dia do advogado.
 
 Os formulários agora utilizam `st.dialog` para exibir caixas de diálogo modais
-ao adicionar novos registros.
+ao adicionar novos registros. Os formulários de edição também usam `st.dialog`.
