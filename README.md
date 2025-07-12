@@ -17,6 +17,7 @@ O painel possui as seguintes seções:
 - Visão Geral
 - Clientes
 - Casos
+- Documentos
 - Agenda
 - Tarefas
 - Casos por Cliente
