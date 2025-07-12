@@ -484,27 +484,25 @@ elif menu == "Clientes":
         dialog_add_client()
     st.subheader("Lista de Clientes")
     search_client = st.text_input("Buscar", key="search_client")
-    df_clients = pd.DataFrame(st.session_state.clients)
-    if not df_clients.empty:
-        df_clients = df_clients[df_clients["Nome"].str.contains(search_client, case=False)]
-        event = st.dataframe(
-            df_clients,
-            key="clients_df",
-            hide_index=True,
-            use_container_width=True,
-            on_select="rerun",
-            selection_mode="single-row",
-        )
-        selection = getattr(event, "selection", None)
-        if selection and selection.rows:
-            pos = selection.rows[0]
-            orig_idx = df_clients.index[pos]
+    clients_filtered = [
+        c
+        for c in st.session_state.clients
+        if search_client.lower() in c["Nome"].lower()
+    ]
+    if clients_filtered:
+        for c in clients_filtered:
+            idx = st.session_state.clients.index(c)
+            st.markdown("---")
+            st.write(f"**{c['Nome']}**")
+            st.write(f"Email: {c['Email']} | Telefone: {c['Telefone']}")
+            if c.get("Anotações"):
+                st.write(c["Anotações"])
             col1, col2 = st.columns(2)
-            if col1.button("Editar", key="edit_client"):
-                st.session_state.edit_client_idx = orig_idx
+            if col1.button("Editar", key=f"edit_client_{idx}"):
+                st.session_state.edit_client_idx = idx
                 rerun()
-            if col2.button("Excluir", key="del_client"):
-                del st.session_state.clients[orig_idx]
+            if col2.button("Excluir", key=f"del_client_{idx}"):
+                del st.session_state.clients[idx]
                 rerun()
     else:
         st.info("Nenhum cliente cadastrado")
@@ -700,7 +698,15 @@ elif menu == "Casos por Cliente":
         cases = [c for c in st.session_state.cases if c["Cliente"] == client_selected]
         st.subheader(f"Casos de {client_selected}")
         if cases:
-            st.table(cases)
+            for c in cases:
+                st.markdown("---")
+                status_html = status_badge(c["Status"], CASE_STATUS_COLORS)
+                col1, col2 = st.columns(2)
+                col1.write(f"Processo: {c['Processo']}")
+                col2.markdown(f"Status: {status_html}", unsafe_allow_html=True)
+                st.write(f"Advogado: {c['Advogado']} | Abertura: {c['Data de Abertura']}")
+                if c.get("Partes"):
+                    st.write(c["Partes"])
         else:
             st.info("Nenhum caso para este cliente")
     else:
