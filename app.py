@@ -4,6 +4,14 @@ from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
+# Compatibilidade para diferentes versões do Streamlit
+def rerun():
+    """Rerun a aplicação usando a API disponível."""
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:  # versões antigas
+        st.experimental_rerun()
+
 # Inicializa estados
 if 'clients' not in st.session_state:
     st.session_state.clients = []
@@ -173,7 +181,7 @@ elif menu == "Clientes":
                     }
                     st.session_state.edit_client_idx = None
                     st.success("Cliente atualizado")
-                    st.experimental_rerun()
+                    rerun()
 
     filtered_clients = [c for c in st.session_state.clients if search_client.lower() in c["Nome"].lower()]
     if filtered_clients:
@@ -187,10 +195,10 @@ elif menu == "Clientes":
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_client_{orig}"):
                 st.session_state.edit_client_idx = orig
-                st.experimental_rerun()
+                rerun()
             if col2.button("Excluir", key=f"del_client_{orig}"):
                 del st.session_state.clients[orig]
-                st.experimental_rerun()
+                rerun()
     else:
         st.info("Nenhum cliente cadastrado")
 
@@ -241,7 +249,7 @@ elif menu == "Casos":
                     }
                     st.session_state.edit_case_idx = None
                     st.success("Caso atualizado")
-                    st.experimental_rerun()
+                    rerun()
 
     filtered_cases = [c for c in st.session_state.cases if search_case.lower() in c["Processo"].lower() or search_case.lower() in c["Cliente"].lower()]
     if status_filter != "Todos":
@@ -258,10 +266,10 @@ elif menu == "Casos":
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_case_{orig}"):
                 st.session_state.edit_case_idx = orig
-                st.experimental_rerun()
+                rerun()
             if col2.button("Excluir", key=f"del_case_{orig}"):
                 del st.session_state.cases[orig]
-                st.experimental_rerun()
+                rerun()
     else:
         st.info("Nenhum caso cadastrado")
 
@@ -307,7 +315,7 @@ elif menu == "Documentos":
                     }
                     st.session_state.edit_document_idx = None
                     st.success("Documento atualizado")
-                    st.experimental_rerun()
+                    rerun()
 
     filtered_docs = [d for d in st.session_state.documents if search_doc.lower() in d["Título"].lower()]
     if filtered_docs:
@@ -319,10 +327,10 @@ elif menu == "Documentos":
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_doc_{orig}"):
                 st.session_state.edit_document_idx = orig
-                st.experimental_rerun()
+                rerun()
             if col2.button("Excluir", key=f"del_doc_{orig}"):
                 del st.session_state.documents[orig]
-                st.experimental_rerun()
+                rerun()
     else:
         st.info("Nenhum documento anexado")
 
@@ -388,7 +396,7 @@ elif menu == "Agenda":
                     }
                     st.session_state.edit_event_idx = None
                     st.success("Evento atualizado")
-                    st.experimental_rerun()
+                    rerun()
 
     filtered_events = [e for e in st.session_state.events if search_event.lower() in e["Título"].lower()]
     if status_filter_evt != "Todos":
@@ -403,10 +411,10 @@ elif menu == "Agenda":
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_event_{orig}"):
                 st.session_state.edit_event_idx = orig
-                st.experimental_rerun()
+                rerun()
             if col2.button("Excluir", key=f"del_event_{orig}"):
                 del st.session_state.events[orig]
-                st.experimental_rerun()
+                rerun()
     else:
         st.info("Nenhum evento cadastrado")
 
@@ -459,7 +467,7 @@ elif menu == "Tarefas":
                     }
                     st.session_state.edit_task_idx = None
                     st.success("Tarefa atualizada")
-                    st.experimental_rerun()
+                    rerun()
 
     filtered_tasks = [t for t in st.session_state.tasks if search_task.lower() in t["Descrição"].lower()]
     if due_filter:
@@ -473,10 +481,10 @@ elif menu == "Tarefas":
             col1, col2 = st.columns(2)
             if col1.button("Editar", key=f"edit_task_{orig}"):
                 st.session_state.edit_task_idx = orig
-                st.experimental_rerun()
+                rerun()
             if col2.button("Excluir", key=f"del_task_{orig}"):
                 del st.session_state.tasks[orig]
-                st.experimental_rerun()
+                rerun()
     else:
         st.info("Nenhuma tarefa cadastrada")
 
