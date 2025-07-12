@@ -315,6 +315,133 @@ def dialog_add_expense():
         st.rerun()
 
 
+# Dialogs for editing existing records
+@st.dialog("Editar Cliente", width="large")
+def dialog_edit_client(idx: int):
+    c = st.session_state.clients[idx]
+    name = st.text_input("Nome Completo *", value=c["Nome"])
+    email = st.text_input("E-mail", value=c["Email"])
+    phone = st.text_input("Telefone", value=c["Telefone"])
+    notes = st.text_area("Anotações / Preferências", value=c["Anotações"])
+    if st.button("Salvar"):
+        st.session_state.clients[idx] = {
+            "Nome": name,
+            "Email": email,
+            "Telefone": phone,
+            "Anotações": notes,
+        }
+        st.session_state.edit_client_idx = None
+        st.success("Cliente atualizado")
+        rerun()
+
+
+@st.dialog("Editar Caso", width="large")
+def dialog_edit_case(idx: int):
+    c = st.session_state.cases[idx]
+    client = st.text_input("Cliente *", value=c["Cliente"])
+    process_number = st.text_input("Nº do Processo *", value=c["Processo"])
+    parties = st.text_area("Partes Envolvidas", value=c["Partes"])
+    lawyer = st.text_input("Advogado Responsável", value=c["Advogado"])
+    start_date = st.date_input("Data de Abertura", value=c["Data de Abertura"])
+    status = st.selectbox(
+        "Status",
+        ["Ativo", "Encerrado", "Suspenso"],
+        index=["Ativo", "Encerrado", "Suspenso"].index(c["Status"]),
+    )
+    if st.button("Salvar"):
+        st.session_state.cases[idx] = {
+            "Cliente": client,
+            "Processo": process_number,
+            "Partes": parties,
+            "Advogado": lawyer,
+            "Data de Abertura": start_date,
+            "Status": status,
+        }
+        st.session_state.edit_case_idx = None
+        st.success("Caso atualizado")
+        rerun()
+
+
+@st.dialog("Editar Documento", width="large")
+def dialog_edit_document(idx: int):
+    d = st.session_state.documents[idx]
+    client = st.text_input("Cliente *", value=d["Cliente"])
+    case = st.text_input("Caso", value=d["Caso"] or "")
+    title = st.text_input("Título / Descrição *", value=d["Título"])
+    if st.button("Salvar"):
+        st.session_state.documents[idx] = {
+            "Cliente": client,
+            "Caso": case if case else None,
+            "Título": title,
+            "Arquivo": d.get("Arquivo", ""),
+        }
+        st.session_state.edit_document_idx = None
+        st.success("Documento atualizado")
+        rerun()
+
+
+@st.dialog("Editar Evento", width="large")
+def dialog_edit_event(idx: int):
+    ev = st.session_state.events[idx]
+    title = st.text_input("Título *", value=ev["Título"])
+    event_type = st.selectbox(
+        "Tipo de Evento *",
+        ["Audiência", "Prazo", "Reunião"],
+        index=["Audiência", "Prazo", "Reunião"].index(ev["Tipo"]),
+    )
+    event_day = st.date_input("Data *", value=ev["Data"].date())
+    event_time = st.time_input("Hora *", value=ev["Data"].time())
+    location = st.text_input("Local / Link", value=ev["Local"])
+    client = st.text_input("Cliente", value=ev["Cliente"] or "")
+    case = st.text_input("Caso", value=ev["Caso"] or "")
+    status = st.selectbox(
+        "Status",
+        ["Agendado", "Concluído", "Cancelado"],
+        index=["Agendado", "Concluído", "Cancelado"].index(ev["Status"]),
+    )
+    description = st.text_area("Descrição", value=ev["Descrição"])
+    if st.button("Salvar"):
+        dt = datetime.combine(event_day, event_time)
+        st.session_state.events[idx] = {
+            "Título": title,
+            "Tipo": event_type,
+            "Data": dt,
+            "Local": location,
+            "Cliente": client if client else None,
+            "Caso": case if case else None,
+            "Status": status,
+            "Descrição": description,
+        }
+        st.session_state.edit_event_idx = None
+        st.success("Evento atualizado")
+        rerun()
+
+
+@st.dialog("Editar Tarefa", width="large")
+def dialog_edit_task(idx: int):
+    t = st.session_state.tasks[idx]
+    description = st.text_input("Descrição *", value=t["Descrição"])
+    priority = st.selectbox(
+        "Prioridade",
+        ["Baixa", "Média", "Alta"],
+        index=["Baixa", "Média", "Alta"].index(t["Prioridade"]),
+    )
+    due_date = st.date_input("Data do Prazo", value=t["Prazo"])
+    client = st.text_input("Cliente", value=t["Cliente"] or "")
+    related_case = st.text_input("Caso", value=t["Caso"] or "")
+    if st.button("Salvar"):
+        st.session_state.tasks[idx] = {
+            "Descrição": description,
+            "Prioridade": priority,
+            "Prazo": due_date,
+            "Cliente": client if client else None,
+            "Caso": related_case if related_case else None,
+        }
+        st.session_state.edit_task_idx = None
+        st.success("Tarefa atualizada")
+        rerun()
+
+
 # Páginas
 if menu == "Visão Geral":
     st.title("Painel Geral")
@@ -341,24 +468,7 @@ elif menu == "Clientes":
     search_client = st.text_input("Buscar", key="search_client")
     edit_idx = st.session_state.get("edit_client_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.clients):
-        c = st.session_state.clients[edit_idx]
-        with st.expander("Editar Cliente", expanded=True):
-            with st.form("edit_client"):
-                name = st.text_input("Nome Completo *", value=c["Nome"])
-                email = st.text_input("E-mail", value=c["Email"])
-                phone = st.text_input("Telefone", value=c["Telefone"])
-                notes = st.text_area("Anotações / Preferências", value=c["Anotações"])
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    st.session_state.clients[edit_idx] = {
-                        "Nome": name,
-                        "Email": email,
-                        "Telefone": phone,
-                        "Anotações": notes,
-                    }
-                    st.session_state.edit_client_idx = None
-                    st.success("Cliente atualizado")
-                    rerun()
+        dialog_edit_client(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_client_idx = None
         rerun()
@@ -396,34 +506,7 @@ elif menu == "Casos":
     status_filter = st.selectbox("Filtrar por Status", statuses, key="status_case")
     edit_idx = st.session_state.get("edit_case_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.cases):
-        c = st.session_state.cases[edit_idx]
-        with st.expander("Editar Caso", expanded=True):
-            with st.form("edit_case"):
-                client = st.text_input("Cliente *", value=c["Cliente"])
-                process_number = st.text_input("Nº do Processo *", value=c["Processo"])
-                parties = st.text_area("Partes Envolvidas", value=c["Partes"])
-                lawyer = st.text_input("Advogado Responsável", value=c["Advogado"])
-                start_date = st.date_input(
-                    "Data de Abertura", value=c["Data de Abertura"]
-                )
-                status = st.selectbox(
-                    "Status",
-                    ["Ativo", "Encerrado", "Suspenso"],
-                    index=["Ativo", "Encerrado", "Suspenso"].index(c["Status"]),
-                )
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    st.session_state.cases[edit_idx] = {
-                        "Cliente": client,
-                        "Processo": process_number,
-                        "Partes": parties,
-                        "Advogado": lawyer,
-                        "Data de Abertura": start_date,
-                        "Status": status,
-                    }
-                    st.session_state.edit_case_idx = None
-                    st.success("Caso atualizado")
-                    rerun()
+        dialog_edit_case(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_case_idx = None
         rerun()
@@ -463,23 +546,7 @@ elif menu == "Documentos":
     search_doc = st.text_input("Buscar", key="search_document")
     edit_idx = st.session_state.get("edit_document_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.documents):
-        d = st.session_state.documents[edit_idx]
-        with st.expander("Editar Documento", expanded=True):
-            with st.form("edit_document"):
-                client = st.text_input("Cliente *", value=d["Cliente"])
-                case = st.text_input("Caso", value=d["Caso"] or "")
-                title = st.text_input("Título / Descrição *", value=d["Título"])
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    st.session_state.documents[edit_idx] = {
-                        "Cliente": client,
-                        "Caso": case if case else None,
-                        "Título": title,
-                        "Arquivo": d.get("Arquivo", ""),
-                    }
-                    st.session_state.edit_document_idx = None
-                    st.success("Documento atualizado")
-                    rerun()
+        dialog_edit_document(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_document_idx = None
         rerun()
@@ -517,46 +584,7 @@ elif menu == "Agenda":
     status_filter_evt = st.selectbox("Status", statuses_evt, key="status_event")
     edit_idx = st.session_state.get("edit_event_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.events):
-        ev = st.session_state.events[edit_idx]
-        with st.expander("Editar Evento", expanded=True):
-            with st.form("edit_event"):
-                title = st.text_input("Título *", value=ev["Título"])
-                event_type = st.selectbox(
-                    "Tipo de Evento *",
-                    ["Audiência", "Prazo", "Reunião"],
-                    index=["Audiência", "Prazo", "Reunião"].index(ev["Tipo"]),
-                )
-                event_day = st.date_input("Data *", value=ev["Data"].date())
-                event_time = st.time_input("Hora *", value=ev["Data"].time())
-                location = st.text_input("Local / Link", value=ev["Local"])
-                client = st.text_input("Cliente", value=ev["Cliente"] or "")
-                case = st.text_input("Caso", value=ev["Caso"] or "")
-                status = st.selectbox(
-                    "Status",
-                    ["Agendado", "Concluído", "Cancelado"],
-                    index=["Agendado", "Concluído", "Cancelado"].index(ev["Status"]),
-                )
-                description = st.text_area("Descrição", value=ev["Descrição"])
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    if isinstance(event_day, datetime):
-                        event_day = event_day.date()
-                    if isinstance(event_time, datetime):
-                        event_time = event_time.time()
-                    dt = datetime.combine(event_day, event_time)
-                    st.session_state.events[edit_idx] = {
-                        "Título": title,
-                        "Tipo": event_type,
-                        "Data": dt,
-                        "Local": location,
-                        "Cliente": client if client else None,
-                        "Caso": case if case else None,
-                        "Status": status,
-                        "Descrição": description,
-                    }
-                    st.session_state.edit_event_idx = None
-                    st.success("Evento atualizado")
-                    rerun()
+        dialog_edit_event(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_event_idx = None
         rerun()
@@ -601,30 +629,7 @@ elif menu == "Tarefas":
     )
     edit_idx = st.session_state.get("edit_task_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.tasks):
-        t = st.session_state.tasks[edit_idx]
-        with st.expander("Editar Tarefa", expanded=True):
-            with st.form("edit_task"):
-                description = st.text_input("Descrição *", value=t["Descrição"])
-                priority = st.selectbox(
-                    "Prioridade",
-                    ["Baixa", "Média", "Alta"],
-                    index=["Baixa", "Média", "Alta"].index(t["Prioridade"]),
-                )
-                due_date = st.date_input("Data do Prazo", value=t["Prazo"])
-                client = st.text_input("Cliente", value=t["Cliente"] or "")
-                related_case = st.text_input("Caso", value=t["Caso"] or "")
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    st.session_state.tasks[edit_idx] = {
-                        "Descrição": description,
-                        "Prioridade": priority,
-                        "Prazo": due_date,
-                        "Cliente": client if client else None,
-                        "Caso": related_case if related_case else None,
-                    }
-                    st.session_state.edit_task_idx = None
-                    st.success("Tarefa atualizada")
-                    rerun()
+        dialog_edit_task(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_task_idx = None
         rerun()
