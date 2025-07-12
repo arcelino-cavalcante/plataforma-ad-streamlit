@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, date
+from datetime import datetime, date, time
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
@@ -7,10 +7,11 @@ st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
 # Compatibilidade para diferentes versões do Streamlit
 def rerun():
-    """Rerun a aplicação usando a API disponível."""
-    if hasattr(st, "rerun"):
-        st.rerun()
-    else:  # versões antigas
+    """Rerun a aplicação de forma compatível com diferentes versões."""
+    try:
+        st.rerun()  # Streamlit 1.25+
+    except Exception:
+        # Fallback para versões antigas
         st.experimental_rerun()
 
 
@@ -426,6 +427,10 @@ elif menu == "Agenda":
                 if submitted:
                     client_val = None if client == "Nenhum" else client
                     case_val = None if case == "Nenhum" else case
+                    if isinstance(event_day, datetime):
+                        event_day = event_day.date()
+                    if isinstance(event_time, datetime):
+                        event_time = event_time.time()
                     dt = datetime.combine(event_day, event_time)
                     add_event(
                         title,
@@ -468,6 +473,10 @@ elif menu == "Agenda":
                 description = st.text_area("Descrição", value=ev["Descrição"])
                 submitted = st.form_submit_button("Salvar")
                 if submitted:
+                    if isinstance(event_day, datetime):
+                        event_day = event_day.date()
+                    if isinstance(event_time, datetime):
+                        event_time = event_time.time()
                     dt = datetime.combine(event_day, event_time)
                     st.session_state.events[edit_idx] = {
                         "Título": title,
