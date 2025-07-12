@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime, date
+from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
@@ -34,18 +35,31 @@ if 'show_add_income' not in st.session_state:
 if 'show_add_expense' not in st.session_state:
     st.session_state.show_add_expense = False
 
-menu = st.sidebar.selectbox(
-    "Menu",[
-        "Visão Geral",
-        "Clientes",
-        "Casos",
-        "Documentos",
-        "Agenda",
-        "Tarefas",
-        "Casos por Cliente",
-        "Financeiro"
-    ]
-)
+with st.sidebar:
+    menu = option_menu(
+        "Menu",
+        [
+            "Visão Geral",
+            "Clientes",
+            "Casos",
+            "Documentos",
+            "Agenda",
+            "Tarefas",
+            "Casos por Cliente",
+            "Financeiro",
+        ],
+        icons=[
+            "speedometer",
+            "people",
+            "folder",
+            "file-earmark",
+            "calendar",
+            "check2-circle",
+            "list-ol",
+            "currency-dollar",
+        ],
+        default_index=0,
+    )
 
 # Funções auxiliares
 
