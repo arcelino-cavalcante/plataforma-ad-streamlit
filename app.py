@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime, date, time
 from streamlit_option_menu import option_menu
+import pandas as pd
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
@@ -483,35 +484,37 @@ elif menu == "Clientes":
         dialog_add_client()
     st.subheader("Lista de Clientes")
     search_client = st.text_input("Buscar", key="search_client")
+    df_clients = pd.DataFrame(st.session_state.clients)
+    if not df_clients.empty:
+        df_clients = df_clients[df_clients["Nome"].str.contains(search_client, case=False)]
+        event = st.dataframe(
+            df_clients,
+            key="clients_df",
+            hide_index=True,
+            use_container_width=True,
+            on_select="rerun",
+            selection_mode="single-row",
+        )
+        selection = getattr(event, "selection", None)
+        if selection and selection.rows:
+            pos = selection.rows[0]
+            orig_idx = df_clients.index[pos]
+            col1, col2 = st.columns(2)
+            if col1.button("Editar", key="edit_client"):
+                st.session_state.edit_client_idx = orig_idx
+                rerun()
+            if col2.button("Excluir", key="del_client"):
+                del st.session_state.clients[orig_idx]
+                rerun()
+    else:
+        st.info("Nenhum cliente cadastrado")
+
     edit_idx = st.session_state.get("edit_client_idx")
     if edit_idx is not None and 0 <= edit_idx < len(st.session_state.clients):
         dialog_edit_client(edit_idx)
     elif edit_idx is not None:
         st.session_state.edit_client_idx = None
         rerun()
-
-    filtered_clients = [
-        c
-        for c in st.session_state.clients
-        if search_client.lower() in c["Nome"].lower()
-    ]
-    if filtered_clients:
-        for c in filtered_clients:
-            orig = st.session_state.clients.index(c)
-            st.markdown("---")
-            st.write(f"**{c['Nome']}**")
-            st.write(f"Email: {c['Email']}  Telefone: {c['Telefone']}")
-            if c.get("Anotações"):
-                st.write(c["Anotações"])
-            col1, col2 = st.columns(2)
-            if col1.button("Editar", key=f"edit_client_{orig}"):
-                st.session_state.edit_client_idx = orig
-                rerun()
-            if col2.button("Excluir", key=f"del_client_{orig}"):
-                del st.session_state.clients[orig]
-                rerun()
-    else:
-        st.info("Nenhum cliente cadastrado")
 
 elif menu == "Casos":
     st.title("Casos")
