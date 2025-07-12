@@ -29,22 +29,6 @@ if "transactions" not in st.session_state:
 if "documents" not in st.session_state:
     st.session_state.documents = []
 
-if "show_add_client" not in st.session_state:
-    st.session_state.show_add_client = False
-if "show_add_case" not in st.session_state:
-    st.session_state.show_add_case = False
-if "show_add_task" not in st.session_state:
-    st.session_state.show_add_task = False
-if "show_add_event" not in st.session_state:
-    st.session_state.show_add_event = False
-if "show_add_transaction" not in st.session_state:
-    st.session_state.show_add_transaction = False
-if "show_add_document" not in st.session_state:
-    st.session_state.show_add_document = False
-if "show_add_income" not in st.session_state:
-    st.session_state.show_add_income = False
-if "show_add_expense" not in st.session_state:
-    st.session_state.show_add_expense = False
 
 with st.sidebar:
     menu = option_menu(
@@ -156,6 +140,181 @@ def add_document(client, case, title, file):
     )
 
 
+# Dialogs for data entry
+@st.dialog("Adicionar Cliente")
+def dialog_add_client():
+    name = st.text_input("Nome Completo *")
+    email = st.text_input("E-mail")
+    phone = st.text_input("Telefone")
+    notes = st.text_area("Anotações / Preferências")
+    if st.button("Salvar"):
+        add_client(name, email, phone, notes)
+        st.success("Cliente adicionado")
+        st.rerun()
+
+
+@st.dialog("Adicionar Caso", width="large")
+def dialog_add_case():
+    client = (
+        st.selectbox("Cliente *", [c["Nome"] for c in st.session_state.clients])
+        if st.session_state.clients
+        else st.text_input("Cliente *")
+    )
+    process_number = st.text_input("Nº do Processo *")
+    parties = st.text_area("Partes Envolvidas")
+    lawyer = st.text_input("Advogado Responsável")
+    start_date = st.date_input("Data de Abertura", value=date.today())
+    status = st.selectbox("Status", ["Ativo", "Encerrado", "Suspenso"])
+    if st.button("Salvar"):
+        add_case(client, process_number, parties, lawyer, start_date, status)
+        st.success("Caso adicionado")
+        st.rerun()
+
+
+@st.dialog("Anexar Documento", width="large")
+def dialog_add_document():
+    client = (
+        st.selectbox("Cliente *", [c["Nome"] for c in st.session_state.clients])
+        if st.session_state.clients
+        else st.text_input("Cliente *")
+    )
+    case = st.selectbox(
+        "Vincular ao Caso (opcional)",
+        ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
+    )
+    title = st.text_input("Título / Descrição *")
+    file = st.file_uploader("Arquivo *")
+    if st.button("Salvar"):
+        case_val = None if case == "Nenhum" else case
+        add_document(client, case_val, title, file)
+        st.success("Documento anexado")
+        st.rerun()
+
+
+@st.dialog("Adicionar Evento", width="large")
+def dialog_add_event():
+    title = st.text_input("Título *")
+    event_type = st.selectbox("Tipo de Evento *", ["Audiência", "Prazo", "Reunião"])
+    event_day = st.date_input("Data *", value=date.today())
+    event_time = st.time_input("Hora *", value=datetime.now().time())
+    location = st.text_input("Local / Link")
+    client = st.selectbox(
+        "Vincular ao Cliente",
+        ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
+    )
+    case = st.selectbox(
+        "Vincular ao Caso",
+        ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
+    )
+    status = st.selectbox("Status", ["Agendado", "Concluído", "Cancelado"])
+    description = st.text_area("Descrição")
+    if st.button("Salvar"):
+        client_val = None if client == "Nenhum" else client
+        case_val = None if case == "Nenhum" else case
+        if isinstance(event_day, datetime):
+            event_day = event_day.date()
+        if isinstance(event_time, datetime):
+            event_time = event_time.time()
+        dt = datetime.combine(event_day, event_time)
+        add_event(
+            title,
+            event_type,
+            dt,
+            location,
+            client_val,
+            case_val,
+            status,
+            description,
+        )
+        st.success("Evento adicionado")
+        st.rerun()
+
+
+@st.dialog("Adicionar Tarefa")
+def dialog_add_task():
+    description = st.text_input("Descrição *")
+    priority = st.selectbox("Prioridade", ["Baixa", "Média", "Alta"])
+    due_date = st.date_input("Data do Prazo", value=date.today())
+    client = st.selectbox(
+        "Vincular ao Cliente",
+        ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
+    )
+    related_case = st.selectbox(
+        "Vincular ao Caso",
+        ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
+    )
+    if st.button("Salvar"):
+        client_val = None if client == "Nenhum" else client
+        case_val = None if related_case == "Nenhum" else related_case
+        add_task(description, priority, due_date, client_val, case_val)
+        st.success("Tarefa adicionada")
+        st.rerun()
+
+
+@st.dialog("Registrar Receita")
+def dialog_add_income():
+    category = st.text_input("Categoria *", value="Honorários")
+    amount = st.number_input("Valor (R$) *", min_value=0.0, step=0.01)
+    description = st.text_input("Descrição *")
+    trans_date = st.date_input("Data *", value=date.today())
+    payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
+    client = st.selectbox(
+        "Vincular ao Cliente",
+        ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
+    )
+    case = st.selectbox(
+        "Vincular ao Caso",
+        ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
+    )
+    if st.button("Salvar"):
+        client_val = None if client == "Nenhum" else client
+        case_val = None if case == "Nenhum" else case
+        add_transaction(
+            "Receita",
+            category,
+            amount,
+            description,
+            trans_date,
+            payment_status,
+            client_val,
+            case_val,
+        )
+        st.success("Receita registrada")
+        st.rerun()
+
+
+@st.dialog("Registrar Despesa")
+def dialog_add_expense():
+    category = st.text_input("Categoria *", value="Honorários")
+    amount = st.number_input("Valor (R$) *", min_value=0.0, step=0.01)
+    description = st.text_input("Descrição *")
+    trans_date = st.date_input("Data *", value=date.today())
+    payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
+    client = st.selectbox(
+        "Vincular ao Cliente",
+        ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
+    )
+    case = st.selectbox(
+        "Vincular ao Caso",
+        ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
+    )
+    if st.button("Salvar"):
+        client_val = None if client == "Nenhum" else client
+        case_val = None if case == "Nenhum" else case
+        add_transaction(
+            "Despesa",
+            category,
+            amount,
+            description,
+            trans_date,
+            payment_status,
+            client_val,
+            case_val,
+        )
+        st.success("Despesa registrada")
+        st.rerun()
+
+
 # Páginas
 if menu == "Visão Geral":
     st.title("Painel Geral")
@@ -177,18 +336,7 @@ if menu == "Visão Geral":
 elif menu == "Clientes":
     st.title("Clientes")
     if st.button("Adicionar Cliente"):
-        st.session_state.show_add_client = not st.session_state.show_add_client
-    if st.session_state.show_add_client:
-        with st.expander("Adicionar Cliente", expanded=True):
-            with st.form("add_client"):
-                name = st.text_input("Nome Completo *")
-                email = st.text_input("E-mail")
-                phone = st.text_input("Telefone")
-                notes = st.text_area("Anotações / Preferências")
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    add_client(name, email, phone, notes)
-                    st.success("Cliente adicionado")
+        dialog_add_client()
     st.subheader("Lista de Clientes")
     search_client = st.text_input("Buscar", key="search_client")
     edit_idx = st.session_state.get("edit_client_idx")
@@ -241,28 +389,7 @@ elif menu == "Clientes":
 elif menu == "Casos":
     st.title("Casos")
     if st.button("Adicionar Caso"):
-        st.session_state.show_add_case = not st.session_state.show_add_case
-    if st.session_state.show_add_case:
-        with st.expander("Adicionar Caso", expanded=True):
-            with st.form("add_case"):
-                client = (
-                    st.selectbox(
-                        "Cliente *", [c["Nome"] for c in st.session_state.clients]
-                    )
-                    if st.session_state.clients
-                    else st.text_input("Cliente *")
-                )
-                process_number = st.text_input("Nº do Processo *")
-                parties = st.text_area("Partes Envolvidas")
-                lawyer = st.text_input("Advogado Responsável")
-                start_date = st.date_input("Data de Abertura", value=date.today())
-                status = st.selectbox("Status", ["Ativo", "Encerrado", "Suspenso"])
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    add_case(
-                        client, process_number, parties, lawyer, start_date, status
-                    )
-                    st.success("Caso adicionado")
+        dialog_add_case()
     st.subheader("Lista de Casos")
     search_case = st.text_input("Buscar", key="search_case")
     statuses = ["Todos"] + sorted(list({c["Status"] for c in st.session_state.cases}))
@@ -331,28 +458,7 @@ elif menu == "Casos":
 elif menu == "Documentos":
     st.title("Documentos")
     if st.button("Anexar Documento"):
-        st.session_state.show_add_document = not st.session_state.show_add_document
-    if st.session_state.show_add_document:
-        with st.expander("Anexar Documento", expanded=True):
-            with st.form("add_document"):
-                client = (
-                    st.selectbox(
-                        "Cliente *", [c["Nome"] for c in st.session_state.clients]
-                    )
-                    if st.session_state.clients
-                    else st.text_input("Cliente *")
-                )
-                case = st.selectbox(
-                    "Vincular ao Caso (opcional)",
-                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
-                )
-                title = st.text_input("Título / Descrição *")
-                file = st.file_uploader("Arquivo *")
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    case_val = None if case == "Nenhum" else case
-                    add_document(client, case_val, title, file)
-                    st.success("Documento anexado")
+        dialog_add_document()
     st.subheader("Documentos")
     search_doc = st.text_input("Buscar", key="search_document")
     edit_idx = st.session_state.get("edit_document_idx")
@@ -402,47 +508,7 @@ elif menu == "Documentos":
 elif menu == "Agenda":
     st.title("Agenda")
     if st.button("Adicionar Evento"):
-        st.session_state.show_add_event = not st.session_state.show_add_event
-    if st.session_state.show_add_event:
-        with st.expander("Adicionar Evento", expanded=True):
-            with st.form("add_event"):
-                title = st.text_input("Título *")
-                event_type = st.selectbox(
-                    "Tipo de Evento *", ["Audiência", "Prazo", "Reunião"]
-                )
-                event_day = st.date_input("Data *", value=date.today())
-                event_time = st.time_input("Hora *", value=datetime.now().time())
-                location = st.text_input("Local / Link")
-                client = st.selectbox(
-                    "Vincular ao Cliente",
-                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
-                )
-                case = st.selectbox(
-                    "Vincular ao Caso",
-                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
-                )
-                status = st.selectbox("Status", ["Agendado", "Concluído", "Cancelado"])
-                description = st.text_area("Descrição")
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    client_val = None if client == "Nenhum" else client
-                    case_val = None if case == "Nenhum" else case
-                    if isinstance(event_day, datetime):
-                        event_day = event_day.date()
-                    if isinstance(event_time, datetime):
-                        event_time = event_time.time()
-                    dt = datetime.combine(event_day, event_time)
-                    add_event(
-                        title,
-                        event_type,
-                        dt,
-                        location,
-                        client_val,
-                        case_val,
-                        status,
-                        description,
-                    )
-                    st.success("Evento adicionado")
+        dialog_add_event()
     st.subheader("Eventos")
     search_event = st.text_input("Buscar", key="search_event")
     statuses_evt = ["Todos"] + sorted(
@@ -524,27 +590,7 @@ elif menu == "Agenda":
 elif menu == "Tarefas":
     st.title("Tarefas")
     if st.button("Adicionar Tarefa"):
-        st.session_state.show_add_task = not st.session_state.show_add_task
-    if st.session_state.show_add_task:
-        with st.expander("Adicionar Tarefa", expanded=True):
-            with st.form("add_task"):
-                description = st.text_input("Descrição *")
-                priority = st.selectbox("Prioridade", ["Baixa", "Média", "Alta"])
-                due_date = st.date_input("Data do Prazo", value=date.today())
-                client = st.selectbox(
-                    "Vincular ao Cliente",
-                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
-                )
-                related_case = st.selectbox(
-                    "Vincular ao Caso",
-                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
-                )
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    client_val = None if client == "Nenhum" else client
-                    case_val = None if related_case == "Nenhum" else related_case
-                    add_task(description, priority, due_date, client_val, case_val)
-                    st.success("Tarefa adicionada")
+        dialog_add_task()
     st.subheader("Lista de Tarefas")
     search_task = st.text_input("Buscar", key="search_task")
     apply_filter = st.checkbox("Filtrar por prazo", key="apply_due")
@@ -627,74 +673,10 @@ elif menu == "Financeiro":
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Registrar Receita"):
-            st.session_state.show_add_income = not st.session_state.show_add_income
+            dialog_add_income()
     with col2:
         if st.button("Registrar Despesa"):
-            st.session_state.show_add_expense = not st.session_state.show_add_expense
-
-    if st.session_state.show_add_income:
-        with st.expander("Registrar Receita", expanded=True):
-            with st.form("add_income"):
-                category = st.text_input("Categoria *", value="Honorários")
-                amount = st.number_input("Valor (R$) *", min_value=0.0, step=0.01)
-                description = st.text_input("Descrição *")
-                trans_date = st.date_input("Data *", value=date.today())
-                payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
-                client = st.selectbox(
-                    "Vincular ao Cliente",
-                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
-                )
-                case = st.selectbox(
-                    "Vincular ao Caso",
-                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
-                )
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    client_val = None if client == "Nenhum" else client
-                    case_val = None if case == "Nenhum" else case
-                    add_transaction(
-                        "Receita",
-                        category,
-                        amount,
-                        description,
-                        trans_date,
-                        payment_status,
-                        client_val,
-                        case_val,
-                    )
-                    st.success("Receita registrada")
-
-    if st.session_state.show_add_expense:
-        with st.expander("Registrar Despesa", expanded=True):
-            with st.form("add_expense"):
-                category = st.text_input("Categoria *", value="Honorários")
-                amount = st.number_input("Valor (R$) *", min_value=0.0, step=0.01)
-                description = st.text_input("Descrição *")
-                trans_date = st.date_input("Data *", value=date.today())
-                payment_status = st.selectbox("Status Pagamento", ["Pendente", "Pago"])
-                client = st.selectbox(
-                    "Vincular ao Cliente",
-                    ["Nenhum"] + [c["Nome"] for c in st.session_state.clients],
-                )
-                case = st.selectbox(
-                    "Vincular ao Caso",
-                    ["Nenhum"] + [c["Processo"] for c in st.session_state.cases],
-                )
-                submitted = st.form_submit_button("Salvar")
-                if submitted:
-                    client_val = None if client == "Nenhum" else client
-                    case_val = None if case == "Nenhum" else case
-                    add_transaction(
-                        "Despesa",
-                        category,
-                        amount,
-                        description,
-                        trans_date,
-                        payment_status,
-                        client_val,
-                        case_val,
-                    )
-                    st.success("Despesa registrada")
+            dialog_add_expense()
 
     st.subheader("Movimentos")
     if st.session_state.transactions:
