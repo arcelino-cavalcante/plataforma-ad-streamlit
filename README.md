@@ -24,3 +24,6 @@ O painel possui as seguintes seções:
 - Financeiro
 
 Cada seção permite cadastrar e visualizar informações relacionadas ao dia a dia do advogado.
+
+Os formulários agora utilizam `st.dialog` para exibir caixas de diálogo modais
+ao adicionar novos registros.
