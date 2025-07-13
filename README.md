@@ -36,6 +36,11 @@ conteúdo do JSON das credenciais:
 your_key = "..."
 ```
 
+**Importante**: copie o JSON exatamente como fornecido pelo Google. O campo
+`private_key` precisa conter quebras de linha escapadas com `\n`. Se colado com
+quebras de linha reais, ocorrerá erro "Invalid control character" ao ler as
+credenciais.
+
 Ao implantar no Streamlit Cloud, copie esse mesmo conteúdo para a seção **Secret**
 nas configurações avançadas do aplicativo. Certifique-se também de compartilhar a planilha e a pasta do Google Drive com o e-mail da conta de serviço para que o aplicativo tenha permissão de leitura e escrita.
 
