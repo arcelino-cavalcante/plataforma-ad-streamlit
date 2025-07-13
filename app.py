@@ -473,22 +473,45 @@ if menu == "Visão Geral":
     )
     col4.metric("Saldo", f"R$ {saldo:,.2f}")
     st.subheader("Calendário")
-    calendar_events = [
-        {
-            "title": e["Título"],
-            "start": e["Data"].isoformat(),
-            "color": EVENT_STATUS_COLORS.get(e["Status"], "gray"),
-        }
-        for e in st.session_state.events
-    ]
-    calendar_component(
+    calendar_events = []
+    for idx, e in enumerate(st.session_state.events):
+        calendar_events.append(
+            {
+                "title": f"{e['Título']} ({e['Tipo']})",
+                "start": e["Data"].isoformat(),
+                "color": EVENT_STATUS_COLORS.get(e["Status"], "gray"),
+                "extendedProps": {"type": "event", "index": idx},
+            }
+        )
+    for idx, t in enumerate(st.session_state.tasks):
+        calendar_events.append(
+            {
+                "title": f"Tarefa: {t['Descrição']}",
+                "start": t["Prazo"].isoformat(),
+                "allDay": True,
+                "color": TASK_PRIORITY_COLORS.get(t["Prioridade"], "gray"),
+                "extendedProps": {"type": "task", "index": idx},
+            }
+        )
+
+    cal_state = calendar_component(
         events=calendar_events,
         options={
             "initialView": "dayGridMonth",
             "locale": "pt-br",
             "height": 500,
         },
+        key="overview_calendar",
+        callbacks=["eventClick"],
     )
+
+    if cal_state.get("eventClick"):
+        props = cal_state["eventClick"]["event"].get("extendedProps", {})
+        idx = props.get("index")
+        if props.get("type") == "event" and idx is not None:
+            dialog_edit_event(idx)
+        elif props.get("type") == "task" and idx is not None:
+            dialog_edit_task(idx)
     st.subheader("Próximos eventos")
     if st.session_state.events:
         upcoming = sorted(st.session_state.events, key=lambda x: x["Data"])[:5]
