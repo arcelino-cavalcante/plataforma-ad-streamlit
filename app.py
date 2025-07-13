@@ -15,7 +15,7 @@ def rerun():
     """Rerun a aplicação de forma compatível com diferentes versões."""
     try:
         st.rerun()  # Streamlit 1.25+
-    except Exception:
+    except Exception as e:
         # Fallback para versões antigas
         st.experimental_rerun()
 
@@ -72,8 +72,8 @@ if not any([
             for tr in load_rows("Movimentos")
         ]
         st.session_state.documents = load_rows("Documentos")
-    except Exception:
-        st.warning("Falha ao carregar dados do Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao carregar dados do Google Sheets: {e}")
 
 
 with st.sidebar:
@@ -155,8 +155,8 @@ def add_client(name, email, phone, notes):
     st.session_state.clients.append(record)
     try:
         append_rows("Clientes", [[name, email, phone, notes]])
-    except Exception:
-        st.warning("Falha ao salvar cliente no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar cliente no Google Sheets: {e}")
 
 
 def add_case(client, process_number, parties, lawyer, start_date, status):
@@ -181,8 +181,8 @@ def add_case(client, process_number, parties, lawyer, start_date, status):
                 status,
             ]],
         )
-    except Exception:
-        st.warning("Falha ao salvar caso no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar caso no Google Sheets: {e}")
 
 
 def add_task(description, priority, due_date, client, related_case):
@@ -205,8 +205,8 @@ def add_task(description, priority, due_date, client, related_case):
                 related_case,
             ]],
         )
-    except Exception:
-        st.warning("Falha ao salvar tarefa no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar tarefa no Google Sheets: {e}")
 
 
 def add_event(
@@ -239,8 +239,8 @@ def add_event(
                 description,
             ]],
         )
-    except Exception:
-        st.warning("Falha ao salvar evento no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar evento no Google Sheets: {e}")
 
 
 def add_transaction(
@@ -271,8 +271,8 @@ def add_transaction(
                 case,
             ]],
         )
-    except Exception:
-        st.warning("Falha ao salvar movimento no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar movimento no Google Sheets: {e}")
 
 
 def add_document(client, case, title, file):
@@ -280,8 +280,8 @@ def add_document(client, case, title, file):
     if file is not None:
         try:
             link = upload_file(file.read(), file.name, client)
-        except Exception:
-            st.warning("Falha ao enviar arquivo ao Google Drive")
+        except Exception as e:
+            st.warning(f"Falha ao enviar arquivo ao Google Drive: {e}")
     record = {
         "Cliente": client,
         "Caso": case,
@@ -294,8 +294,8 @@ def add_document(client, case, title, file):
             "Documentos",
             [[client, case, title, record["Arquivo"]]],
         )
-    except Exception:
-        st.warning("Falha ao salvar documento no Google Sheets")
+    except Exception as e:
+        st.warning(f"Falha ao salvar documento no Google Sheets: {e}")
 
 
 # Dialogs for data entry

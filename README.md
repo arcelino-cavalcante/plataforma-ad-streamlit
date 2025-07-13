@@ -28,6 +28,17 @@ do JSON de credenciais em um secret do Streamlit Cloud chamado
 arquivo temporário para a autenticação, mantendo compatibilidade com o uso de
 `GOOGLE_CREDS`.
 
+Para desenvolvimento local, crie um arquivo `.streamlit/secrets.toml` com o
+conteúdo do JSON das credenciais:
+
+```toml
+[GOOGLE_CREDS_JSON]
+your_key = "..."
+```
+
+Ao implantar no Streamlit Cloud, copie esse mesmo conteúdo para a seção **Secret**
+nas configurações avançadas do aplicativo. Certifique-se também de compartilhar a planilha e a pasta do Google Drive com o e-mail da conta de serviço para que o aplicativo tenha permissão de leitura e escrita.
+
 O painel possui as seguintes seções:
 - Visão Geral
 - Clientes
