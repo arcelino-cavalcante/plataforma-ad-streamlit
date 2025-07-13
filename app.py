@@ -3,6 +3,8 @@ from datetime import datetime, date, time
 from streamlit_option_menu import option_menu
 import pandas as pd
 from streamlit_calendar import calendar as calendar_component
+from fpdf import FPDF
+import io
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
@@ -44,6 +46,7 @@ with st.sidebar:
             "Tarefas",
             "Casos por Cliente",
             "Financeiro",
+            "Relatórios",
         ],
         icons=[
             "speedometer",
@@ -54,6 +57,7 @@ with st.sidebar:
             "check2-circle",
             "list-ol",
             "currency-dollar",
+            "file-earmark-arrow-down",
         ],
         default_index=0,
     )
@@ -75,6 +79,28 @@ def status_badge(status: str, mapping: dict) -> str:
     """Return HTML string for a colored status badge."""
     color = mapping.get(status, "gray")
     return f"<span style='color:{color}; font-weight:bold'>{status}</span>"
+
+
+def dataframe_to_pdf(df: pd.DataFrame, title: str) -> bytes:
+    """Generate a simple table PDF from dataframe."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, title, ln=1, align="C")
+    pdf.ln(4)
+    pdf.set_font("Arial", size=12)
+    col_width = pdf.w / (len(df.columns) + 1)
+    row_height = pdf.font_size * 1.5
+    # Header
+    for col in df.columns:
+        pdf.cell(col_width, row_height, str(col), border=1)
+    pdf.ln(row_height)
+    # Rows
+    for _, row in df.iterrows():
+        for item in row:
+            pdf.cell(col_width, row_height, str(item), border=1)
+        pdf.ln(row_height)
+    return pdf.output(dest="S").encode("latin-1")
 
 
 def add_client(name, email, phone, notes):
@@ -788,3 +814,41 @@ elif menu == "Financeiro":
         for t in st.session_state.transactions
     )
     st.write(f"**Saldo atual:** R$ {saldo:,.2f}")
+
+elif menu == "Relatórios":
+    st.title("Relatórios")
+    st.write("Exporte listagens para compartilhar com clientes ou colegas.")
+
+    report_type = st.selectbox(
+        "Tipo de relatório",
+        ["Casos", "Documentos", "Movimentos Financeiros"],
+    )
+
+    data_map = {
+        "Casos": st.session_state.cases,
+        "Documentos": st.session_state.documents,
+        "Movimentos Financeiros": st.session_state.transactions,
+    }
+    data = data_map.get(report_type, [])
+
+    if data:
+        df = pd.DataFrame(data)
+
+        excel_buffer = io.BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        st.download_button(
+            "Baixar Excel",
+            data=excel_buffer.getvalue(),
+            file_name=f"{report_type}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        pdf_bytes = dataframe_to_pdf(df, report_type)
+        st.download_button(
+            "Baixar PDF",
+            data=pdf_bytes,
+            file_name=f"{report_type}.pdf",
+            mime="application/pdf",
+        )
+    else:
+        st.info("Nenhum dado disponível para este relatório")
