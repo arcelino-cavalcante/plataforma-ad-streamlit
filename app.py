@@ -5,7 +5,6 @@ import pandas as pd
 from streamlit_calendar import calendar as calendar_component
 from fpdf import FPDF
 import io
-from google_utils import append_rows, load_rows, upload_file
 
 st.set_page_config(page_title="Painel para Advogados", layout="wide")
 
@@ -15,7 +14,7 @@ def rerun():
     """Rerun a aplicação de forma compatível com diferentes versões."""
     try:
         st.rerun()  # Streamlit 1.25+
-    except Exception as e:
+    except Exception:
         # Fallback para versões antigas
         st.experimental_rerun()
 
@@ -33,47 +32,6 @@ if "transactions" not in st.session_state:
     st.session_state.transactions = []
 if "documents" not in st.session_state:
     st.session_state.documents = []
-
-# Carrega dados do Google Sheets se ainda não houver registros
-if not any([
-    st.session_state.clients,
-    st.session_state.cases,
-    st.session_state.tasks,
-    st.session_state.events,
-    st.session_state.transactions,
-    st.session_state.documents,
-]):
-    try:
-        st.session_state.clients = load_rows("Clientes")
-        st.session_state.cases = load_rows("Casos")
-        st.session_state.tasks = [
-            {
-                **t,
-                "Prazo": pd.to_datetime(t.get("Prazo")).date()
-                if t.get("Prazo")
-                else None,
-            }
-            for t in load_rows("Tarefas")
-        ]
-        st.session_state.events = [
-            {
-                **e,
-                "Data": pd.to_datetime(e.get("Data")),
-            }
-            for e in load_rows("Eventos")
-        ]
-        st.session_state.transactions = [
-            {
-                **tr,
-                "Data": pd.to_datetime(tr.get("Data")).date()
-                if tr.get("Data")
-                else None,
-            }
-            for tr in load_rows("Movimentos")
-        ]
-        st.session_state.documents = load_rows("Documentos")
-    except Exception as e:
-        st.warning(f"Falha ao carregar dados do Google Sheets: {e}")
 
 
 with st.sidebar:
@@ -146,156 +104,84 @@ def dataframe_to_pdf(df: pd.DataFrame, title: str) -> bytes:
 
 
 def add_client(name, email, phone, notes):
-    record = {
-        "Nome": name,
-        "Email": email,
-        "Telefone": phone,
-        "Anotações": notes,
-    }
-    st.session_state.clients.append(record)
-    try:
-        append_rows("Clientes", [[name, email, phone, notes]])
-    except Exception as e:
-        st.warning(f"Falha ao salvar cliente no Google Sheets: {e}")
+    st.session_state.clients.append(
+        {
+            "Nome": name,
+            "Email": email,
+            "Telefone": phone,
+            "Anotações": notes,
+        }
+    )
 
 
 def add_case(client, process_number, parties, lawyer, start_date, status):
-    record = {
-        "Cliente": client,
-        "Processo": process_number,
-        "Partes": parties,
-        "Advogado": lawyer,
-        "Data de Abertura": start_date,
-        "Status": status,
-    }
-    st.session_state.cases.append(record)
-    try:
-        append_rows(
-            "Casos",
-            [[
-                client,
-                process_number,
-                parties,
-                lawyer,
-                start_date.isoformat() if isinstance(start_date, (date, datetime)) else start_date,
-                status,
-            ]],
-        )
-    except Exception as e:
-        st.warning(f"Falha ao salvar caso no Google Sheets: {e}")
+    st.session_state.cases.append(
+        {
+            "Cliente": client,
+            "Processo": process_number,
+            "Partes": parties,
+            "Advogado": lawyer,
+            "Data de Abertura": start_date,
+            "Status": status,
+        }
+    )
 
 
 def add_task(description, priority, due_date, client, related_case):
-    record = {
-        "Descrição": description,
-        "Prioridade": priority,
-        "Prazo": due_date,
-        "Cliente": client,
-        "Caso": related_case,
-    }
-    st.session_state.tasks.append(record)
-    try:
-        append_rows(
-            "Tarefas",
-            [[
-                description,
-                priority,
-                due_date.isoformat() if isinstance(due_date, (date, datetime)) else due_date,
-                client,
-                related_case,
-            ]],
-        )
-    except Exception as e:
-        st.warning(f"Falha ao salvar tarefa no Google Sheets: {e}")
+    st.session_state.tasks.append(
+        {
+            "Descrição": description,
+            "Prioridade": priority,
+            "Prazo": due_date,
+            "Cliente": client,
+            "Caso": related_case,
+        }
+    )
 
 
 def add_event(
     title, event_type, event_datetime, location, client, case, status, description
 ):
-    record = {
-        "Título": title,
-        "Tipo": event_type,
-        "Data": event_datetime,
-        "Local": location,
-        "Cliente": client,
-        "Caso": case,
-        "Status": status,
-        "Descrição": description,
-    }
-    st.session_state.events.append(record)
-    try:
-        append_rows(
-            "Eventos",
-            [[
-                title,
-                event_type,
-                event_datetime.isoformat()
-                if isinstance(event_datetime, (date, datetime))
-                else str(event_datetime),
-                location,
-                client,
-                case,
-                status,
-                description,
-            ]],
-        )
-    except Exception as e:
-        st.warning(f"Falha ao salvar evento no Google Sheets: {e}")
+    st.session_state.events.append(
+        {
+            "Título": title,
+            "Tipo": event_type,
+            "Data": event_datetime,
+            "Local": location,
+            "Cliente": client,
+            "Caso": case,
+            "Status": status,
+            "Descrição": description,
+        }
+    )
 
 
 def add_transaction(
     kind, category, amount, description, trans_date, payment_status, client, case
 ):
-    record = {
-        "Tipo": kind,
-        "Categoria": category,
-        "Valor": amount,
-        "Descrição": description,
-        "Data": trans_date,
-        "Status": payment_status,
-        "Cliente": client,
-        "Caso": case,
-    }
-    st.session_state.transactions.append(record)
-    try:
-        append_rows(
-            "Movimentos",
-            [[
-                kind,
-                category,
-                amount,
-                description,
-                trans_date.isoformat() if isinstance(trans_date, (date, datetime)) else trans_date,
-                payment_status,
-                client,
-                case,
-            ]],
-        )
-    except Exception as e:
-        st.warning(f"Falha ao salvar movimento no Google Sheets: {e}")
+    st.session_state.transactions.append(
+        {
+            "Tipo": kind,
+            "Categoria": category,
+            "Valor": amount,
+            "Descrição": description,
+            "Data": trans_date,
+            "Status": payment_status,
+            "Cliente": client,
+            "Caso": case,
+        }
+    )
 
 
 def add_document(client, case, title, file):
-    link = ""
-    if file is not None:
-        try:
-            link = upload_file(file.read(), file.name, client)
-        except Exception as e:
-            st.warning(f"Falha ao enviar arquivo ao Google Drive: {e}")
-    record = {
-        "Cliente": client,
-        "Caso": case,
-        "Título": title,
-        "Arquivo": link or (file.name if file else ""),
-    }
-    st.session_state.documents.append(record)
-    try:
-        append_rows(
-            "Documentos",
-            [[client, case, title, record["Arquivo"]]],
-        )
-    except Exception as e:
-        st.warning(f"Falha ao salvar documento no Google Sheets: {e}")
+    st.session_state.documents.append(
+        {
+            "Cliente": client,
+            "Caso": case,
+            "Título": title,
+            "Arquivo": file.name if file else "",
+        }
+    )
 
 
 # Dialogs for data entry
