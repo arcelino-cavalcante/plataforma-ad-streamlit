@@ -1,5 +1,7 @@
 import os
 import io
+import tempfile
+import streamlit as st
 from typing import List, Dict
 
 import gspread
@@ -23,10 +25,17 @@ _drive_service = None
 def get_credentials():
     global _creds
     if _creds is None:
-        creds_path = os.environ.get("GOOGLE_CREDS")
-        if not creds_path:
-            raise RuntimeError("Missing GOOGLE_CREDS environment variable")
-        _creds = Credentials.from_service_account_file(creds_path, scopes=SCOPES)
+        json_text = st.secrets.get("GOOGLE_CREDS_JSON")
+        if json_text:
+            with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as tmp:
+                tmp.write(json_text)
+                tmp_path = tmp.name
+            _creds = Credentials.from_service_account_file(tmp_path, scopes=SCOPES)
+        else:
+            creds_path = os.environ.get("GOOGLE_CREDS")
+            if not creds_path:
+                raise RuntimeError("Missing GOOGLE_CREDS or GOOGLE_CREDS_JSON")
+            _creds = Credentials.from_service_account_file(creds_path, scopes=SCOPES)
     return _creds
 
 

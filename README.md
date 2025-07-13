@@ -22,6 +22,12 @@ credenciais e defina a variável de ambiente `GOOGLE_CREDS` apontando para esse
 arquivo. Opcionalmente, defina `GOOGLE_SHEETS_FILE` com o nome da planilha e
 `GOOGLE_DRIVE_ROOT` com o nome da pasta raiz no Drive.
 
+Em vez de fornecer um caminho de arquivo, também é possível gravar todo o texto
+do JSON de credenciais em um secret do Streamlit Cloud chamado
+`GOOGLE_CREDS_JSON`. O código detecta automaticamente esse secret e cria um
+arquivo temporário para a autenticação, mantendo compatibilidade com o uso de
+`GOOGLE_CREDS`.
+
 O painel possui as seguintes seções:
 - Visão Geral
 - Clientes
