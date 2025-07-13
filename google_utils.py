@@ -29,13 +29,13 @@ def get_credentials():
         json_data = st.secrets.get("GOOGLE_CREDS_JSON")
         if json_data:
             if isinstance(json_data, str):
-                json_text = json_data
+                try:
+                    creds_info = json.loads(json_data, strict=False)
+                except json.JSONDecodeError as e:
+                    raise RuntimeError(f"Invalid GOOGLE_CREDS_JSON: {e}") from e
             else:
-                json_text = json.dumps(json_data)
-            with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as tmp:
-                tmp.write(json_text)
-                tmp_path = tmp.name
-            _creds = Credentials.from_service_account_file(tmp_path, scopes=SCOPES)
+                creds_info = json_data
+            _creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
         else:
             creds_path = os.environ.get("GOOGLE_CREDS")
             if not creds_path:
