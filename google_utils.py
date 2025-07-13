@@ -1,6 +1,7 @@
 import os
 import io
 import tempfile
+import json
 import streamlit as st
 from typing import List, Dict
 
@@ -25,8 +26,12 @@ _drive_service = None
 def get_credentials():
     global _creds
     if _creds is None:
-        json_text = st.secrets.get("GOOGLE_CREDS_JSON")
-        if json_text:
+        json_data = st.secrets.get("GOOGLE_CREDS_JSON")
+        if json_data:
+            if isinstance(json_data, str):
+                json_text = json_data
+            else:
+                json_text = json.dumps(json_data)
             with tempfile.NamedTemporaryFile(mode="w+", suffix=".json", delete=False) as tmp:
                 tmp.write(json_text)
                 tmp_path = tmp.name
